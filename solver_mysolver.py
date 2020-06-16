@@ -26,15 +26,20 @@ def solve(cities):
         unvisited_cities.remove(next_city)
         tour.append(next_city)
         index = len(tour)-1
-        if index < 3:
-            continue
-        for i in range(index-3):
-            length = dist[tour[i]][tour[i+1]] + dist[tour[index-1]][tour[index]]
-            swiched_length = dist[tour[i]][tour[index-1]] + dist[tour[i+1]][tour[index]]
-            if swiched_length < length:
-                segment = tour[i+1:index-1]    #if swiched is shorter reverse segment
-                segment.reverse()
-                tour[i+1:index-1] = segment
+        #print(index)
+        switch_index = 0
+        save_length = 0
+        if index > 2:
+            for i in range(index-3):
+                length = dist[tour[i]][tour[i+1]] + dist[tour[index-1]][tour[index]]
+                swiched_length = dist[tour[i]][tour[index-1]] + dist[tour[i+1]][tour[index]]
+                if length - swiched_length > save_length:
+                    save_length = length - swiched_length
+                    switch_index  = i
+            segment = tour[switch_index+1:index-1]    #reverse segment so it would be the shortest
+            segment.reverse()
+            tour[switch_index+1:index-1] = segment
+        #print(tour)
         current_city = next_city
 
     return tour
