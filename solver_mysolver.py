@@ -1,35 +1,41 @@
 #!/usr/bin/env python3
 
 import sys
-
+import math
 from common import print_tour, read_input
-import solver_greedy as g
-#question: i felt like it’s redundant to have the same function in different scripts, so
-#          i imported from solver_greedy but now i feel like it's paying cost for the importing
-#          so i wonder which is better
 
-
-def dist_list(cities, tour, N):
-    dist = [0 for _ in range (N)]
-    for i in range (N):
-        dist[i] = g.distance(cities[tour[i]],cities[tour[(i+1)%N]]) 
-    return dist
+def distance(city1, city2):
+    return math.sqrt((city1[0] - city2[0]) ** 2 + (city1[1] - city2[1]) ** 2)
 
 
 def solve(cities):
     N = len(cities)
-    tour = g.solve(cities)
-    dist = dist_list(cities, tour, N)
-    for i in range (1,N):                  # take two segments and compare with the switched order
-        entry_dot = tour[i]                # when switching reverse entry_dot ~ exit_dot
-        for j in range (i+1,N):
-            exit_dot = tour[j]
-            current_length = dist[i-1]+dist[j]
-            switched_length = g.distance(cities[tour[i-1]],cities[tour[j]])+g.distance(cities[tour[i]],cities[tour[(j+1)%N]])
-            if switched_length < current_length:
-                segment = tour[i:j+1]
+
+    dist = [[0] * N for i in range(N)]
+    for i in range(N):
+        for j in range(i, N):
+            dist[i][j] = dist[j][i] = distance(cities[i], cities[j])
+
+    current_city = 0
+    unvisited_cities = set(range(1, N))
+    tour = [current_city]
+
+    while unvisited_cities:
+        next_city = min(unvisited_cities,
+                        key=lambda city: dist[current_city][city])
+        unvisited_cities.remove(next_city)
+        tour.append(next_city)
+        index = len(tour)-1
+        if index < 3:
+            continue
+        for i in range(index-3):
+            length = dist[tour[i]][tour[i+1]] + dist[tour[index-1]][tour[index]]
+            swiched_length = dist[tour[i]][tour[index-1]] + dist[tour[i+1]][tour[index]]
+            if swiched_length < length:
+                segment = tour[i+1:index-1]    #if swiched is shorter reverse segment
                 segment.reverse()
-                tour[i:j+1] = segment
+                tour[i+1:index-1] = segment
+        current_city = next_city
 
     return tour
 
